@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐺 گرگینه</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #0a0a1a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3rem;
+            color: #f5d742;
+            text-shadow: 0 0 30px rgba(245, 215, 66, 0.3);
+        }
+        input, button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            margin: 8px 0;
+        }
+        input {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            width: 80%;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        button {
+            background: linear-gradient(135deg, #f5d742, #e94560);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 80%;
+        }
+        button:hover {
+            transform: scale(1.02);
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .players {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .player-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 12px;
+        }
+        .player-item.dead {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <h1>🐺 گرگینه</h1>
+        
+        <!-- صفحه شروع -->
+        <div id="menu">
+            <div class="card">
+                <input type="text" id="nameInput" placeholder="اسم شما...">
+                <button onclick="joinGame()">🎮 ورود به بازی</button>
+            </div>
+            <div class="card">
+                <p style="color:#888;">⭐ استارز شما: <strong id="starsDisplay">0</strong></p>
+                <button onclick="buyStars()" style="background:#4ecdc4;width:auto;padding:8px 20px;">خرید استارز</button>
+            </div>
+        </div>
+
+        <!-- صفحه بازی -->
+        <div id="game" style="display:none;">
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;">
+                    <span>🌙 <span id="phaseDisplay">شب</span></span>
+                    <span>⏱️ <span id="timerDisplay">60</span>s</span>
+                </div>
+                <div style="margin:10px 0;font-size:0.9rem;color:#aaa;">
+                    بازیکنان: <span id="playerCount">0</span>
+                </div>
+            </div>
+
+            <div class="players" id="playersList"></div>
+
+            <div class="card">
+                <div id="actionArea">
+                    <p style="color:#888;">در انتظار اقدام...</p>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                <button onclick="vote()" style="width:auto;padding:8px 25px;background:#f5a623;">🗳️ رأی</button>
+                <button onclick="skipTurn()" style="width:auto;padding:8px 25px;background:rgba(255,255,255,0.1);">⏭️ رد کردن</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== ساده‌ترین منطق بازی =====
+        let players = [];
+        let currentPlayer = null;
+        let phase = 'night';
+        let timer = 60;
+        
+        // بازیکنان نمونه
+        const samplePlayers = ['سارا', 'مهدی', 'نیلوفر', 'امیر', 'زهرا'];
+        
+        function joinGame() {
+            const name = document.getElementById('nameInput').value || 'بازیکن';
+            currentPlayer = name;
+            
+            // توزیع نقش‌ها (ساده)
+            players = samplePlayers.map((p, i) => ({
+                name: p,
+                role: i < 2 ? '🐺 گرگینه' : '👨‍🌾 روستایی',
+                alive: true,
+                isYou: p === name
+            }));
+            
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            
+            updateUI();
+            startTimer();
+            
+            // نمایش پیام خوش‌آمدگویی
+            addAction(`🎮 ${name} به بازی پیوست!`);
+            setTimeout(() => {
+                addAction('🌙 شب فرا رسید... گرگ‌ها بیدار می‌شوند!');
+            }, 1000);
+        }
+        
+        function updateUI() {
+            const list = document.getElementById('playersList');
+            list.innerHTML = players.map(p => `
+                <div class="player-item ${!p.alive ? 'dead' : ''}">
+                    <div>${p.name} ${p.isYou ? '👤' : ''}</div>
+                    <div style="font-size:0.7rem;color:${p.role.includes('گرگ') ? '#ff6b6b' : '#4ecdc4'}">
+                        ${p.alive ? p.role : '💀 مرده'}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('playerCount').textContent = players.filter(p => p.alive).length;
+            document.getElementById('phaseDisplay').textContent = phase === 'night' ? '🌙 شب' : '☀️ روز';
+        }
+        
+        function startTimer() {
+            timer = 60;
+            document.getElementById('timerDisplay').textContent = timer;
+            setInterval(() => {
+                timer--;
+                document.getElementById('timerDisplay').textContent = timer;
+                if (timer <= 0) {
+                    changePhase();
+                }
+            }, 1000);
+        }
+        
+        function changePhase() {
+            phase = phase === 'night' ? 'day' : 'night';
+            addAction(`🔄 ${phase === 'night' ? '🌙 شب' : '☀️ روز'} شروع شد!`);
+            updateUI();
+            
+            // شبیه‌سازی اقدامات خودکار
+            if (phase === 'night') {
+                // گرگ‌ها یک نفر را می‌کشند
+                const alive = players.filter(p => p.alive && !p.role.includes('گرگ'));
+                if (alive.length > 0) {
+                    const victim = alive[Math.floor(Math.random() * alive.length)];
+                    victim.alive = false;
+                    addAction(`🐺 گرگ‌ها ${victim.name} را کشتند!`);
+                    checkWinner();
+                }
+            } else {
+                // روز: رأی‌گیری خودکار
+                const alive = players.filter(p => p.alive);
+                if (alive.length > 1) {
+                    const accused = alive[Math.floor(Math.random() * alive.length)];
+                    accused.alive = false;
+                    addAction(`⚖️ ${accused.name} اعدام شد!`);
+                    checkWinner();
+                }
+            }
+            updateUI();
+        }
+        
+        function checkWinner() {
+            const alive = players.filter(p => p.alive);
+            const wolves = alive.filter(p => p.role.includes('گرگ'));
+            const villagers = alive.filter(p => !p.role.includes('گرگ'));
+            
+            if (wolves.length === 0) {
+                addAction('🎉 خوب‌ها برنده شدند!');
+                endGame();
+            } else if (villagers.length <= wolves.length) {
+                addAction('🐺 گرگ‌ها برنده شدند!');
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            document.getElementById('timerDisplay').textContent = '🏁';
+            document.querySelectorAll('#actionArea button').forEach(b => b.disabled = true);
+        }
+        
+        function addAction(text) {
+            const area = document.getElementById('actionArea');
+            area.innerHTML = `<p style="color:#f5d742;">${text}</p>` + area.innerHTML;
+            // فقط ۵ پیام آخر نگه دار
+            const msgs = area.querySelectorAll('p');
+            if (msgs.length > 5) msgs[msgs.length - 1].remove();
+        }
+        
+        function vote() {
+            addAction('🗳️ شما رأی دادید!');
+        }
+        
+        function skipTurn() {
+            addAction('⏭️ شما رد کردید!');
+        }
+        
+        function buyStars() {
+            alert('⭐ خرید استارز: \n10 بازی = 20 استارز\n20 بازی = 40 استارز');
+        }
+    </script>
+</body>
+</html>
