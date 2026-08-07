@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐺 گرگینه - ۲۷ نقش</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #0a0a1a;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        /* ===== Header ===== */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: #f5d742;
+            text-shadow: 0 0 30px rgba(245,215,66,0.2);
+        }
+        
+        .header .subtitle {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        /* ===== Status Bar ===== */
+        .status-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            padding: 15px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .phase-badge {
+            padding: 8px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .phase-night {
+            background: #1a1a4a;
+            color: #a8b5ff;
+            border: 1px solid #3a3a7a;
+        }
+        
+        .phase-day {
+            background: #f5a623;
+            color: #1a1a2e;
+        }
+        
+        .phase-ended {
+            background: #e94560;
+            color: white;
+        }
+        
+        .phase-idle {
+            background: #333;
+            color: #aaa;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: rgba(0,0,0,0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .stat-item .num {
+            font-weight: bold;
+            color: #f5d742;
+        }
+        
+        /* ===== Players Grid ===== */
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .player-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 12px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .player-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(245,215,66,0.3);
+        }
+        
+        .player-card.dead {
+            opacity: 0.4;
+            filter: grayscale(1);
+        }
+        
+        .player-card .card-image {
+            width: 100%;
+            max-width: 120px;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+        
+        .player-card .card-image.dead {
+            filter: grayscale(1);
+            opacity: 0.5;
+        }
+        
+        .player-card .card-image.hidden {
+            filter: blur(8px);
+        }
+        
+        .player-card .name {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin: 4px 0;
+        }
+        
+        .player-card .role-text {
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 3px 0;
+        }
+        
+        .role-good {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+        
+        .role-evil {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .role-hidden {
+            background: rgba(255,255,255,0.05);
+            color: #666;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .player-card .alive-status {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        /* ===== Controls ===== */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .controls button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .controls button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        
+        .controls button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #f5d742, #e94560);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4ecdc4, #44a89f);
+            color: white;
+        }
+        
+        /* ===== Log ===== */
+        .log-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-top: 15px;
+        }
+        
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+        
+        .log-entry .time {
+            color: #555;
+            font-size: 0.75rem;
+        }
+        
+        .log-entry .highlight {
+            color: #f5d742;
+        }
+        
+        .log-entry .evil {
+            color: #ff6b6b;
+        }
+        
+        .log-entry .good {
+            color: #4ecdc4;
+        }
+        
+        /* ===== Winner Banner ===== */
+        .winner-banner {
+            background: linear-gradient(135deg, #f5d742, #e94560);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 15px 0;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        /* ===== Responsive ===== */
+        @media (max-width: 600px) {
+            .players-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            
+            .stats {
+                justify-content: center;
+            }
+            
+            .controls button {
+                flex: 1;
+                min-width: 120px;
+                font-size: 0.9rem;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🐺 گرگینه</h1>
+            <p class="subtitle">۲۷ نقش | بازی بقا و فریب</p>
+        </div>
+        
+        <!-- Status Bar -->
+        <div class="status-bar" id="statusBar">
+            <div>
+                <span class="phase-badge phase-idle" id="phaseBadge">⏳ آماده</span>
+                <span style="margin-right:15px;font-size:0.9rem;">دور: <strong id="roundDisplay">۰</strong></span>
+            </div>
+            <div class="stats">
+                <span class="stat-item">❤️ زنده: <span class="num" id="aliveCount">۰</span></span>
+                <span class="stat-item">👥 خوب: <span class="num" id="goodCount">۰</span></span>
+                <span class="stat-item">🐺 شر: <span class="num" id="evilCount">۰</span></span>
+            </div>
+        </div>
+        
+        <!-- Winner Display -->
+        <div id="winnerDisplay"></div>
+        
+        <!-- Players -->
+        <div class="players-grid" id="playersGrid"></div>
+        
+        <!-- Controls -->
+        <div class="controls" id="controls">
+            <button class="btn-primary" id="btnStart" onclick="startGame()">🎮 شروع بازی</button>
+            <button class="btn-secondary" id="btnNext" onclick="nextPhase()" disabled>⏭ مرحله بعد</button>
+            <button class="btn-secondary" onclick="resetGame()">🔄 بازی جدید</button>
+        </div>
+        
+        <!-- Log -->
+        <div class="log-box" id="logBox">
+            <div class="log-entry">📜 به گرگینه خوش آمدید! دکمه "شروع بازی" را بزنید.</div>
+        </div>
+    </div>
+    
+    <script>
+        // ================================================================
+        //  🎮 WEREWOLF GAME - 27 ROLES
+        // ================================================================
+        
+        // ---------- ROLE DEFINITIONS ----------
+        const ROLES_LIST = [
+            // Evil Team (8 roles)
+            { name: 'گرگینه', team: 'evil', emoji: '🐺', file: 'werewolf.png' },
+            { name: 'گرگ آلفا', team: 'evil', emoji: '🐺👑', file: 'alpha.png' },
+            { name: 'خون‌آشام', team: 'evil', emoji: '🧛', file: 'vampire.png' },
+            { name: 'جادوگر', team: 'evil', emoji: '🧙', file: 'witch.png' },
+            { name: 'سایرن', team: 'evil', emoji: '🧜', file: 'siren.png' },
+            { name: 'تغییرشکل‌دهنده', team: 'evil', emoji: '🔄', file: 'shapeshifter.png' },
+            { name: 'کابوس', team: 'evil', emoji: '😈', file: 'nightmare.png' },
+            { name: 'شمن گرگ', team: 'evil', emoji: '🪶', file: 'shaman.png' },
+            // Good Team (19 roles)
+            { name: 'روستایی', team: 'good', emoji: '👨‍🌾', file: 'villager.png' },
+            { name: 'پیشگو', team: 'good', emoji: '🔮', file: 'seer.png' },
+            { name: 'دکتر', team: 'good', emoji: '💉', file: 'doctor.png' },
+            { name: 'شوالیه', team: 'good', emoji: '🛡️', file: 'knight.png' },
+            { name: 'شاهدخت', team: 'good', emoji: '👸', file: 'princess.png' },
+            { name: 'شکارچی', team: 'good', emoji: '🏹', file: 'hunter.png' },
+            { name: 'احضارگر ارواح', team: 'good', emoji: '👻', file: 'ghost.png' },
+            { name: 'پادشاه', team: 'good', emoji: '👑', file: 'king.png' },
+            { name: 'دلقک', team: 'good', emoji: '🤡', file: 'jester.png' },
+            { name: 'لایکن', team: 'good', emoji: '🐺', file: 'lycan.png' },
+            { name: 'شهردار', team: 'good', emoji: '🏛️', file: 'mayor.png' },
+            { name: 'قاتل', team: 'good', emoji: '🗡️', file: 'assassin.png' },
+            { name: 'جارچی شهر', team: 'good', emoji: '📢', file: 'crier.png' },
+            { name: 'عاشقان', team: 'good', emoji: '💕', file: 'lovers.png' },
+            { name: 'دروئید', team: 'good', emoji: '🌿', file: 'druid.png' },
+            { name: 'عارف', team: 'good', emoji: '🧘', file: 'mystic.png' },
+            { name: 'دزد', team: 'good', emoji: '🥷', file: 'thief.png' },
+            { name: 'اغواگر', team: 'good', emoji: '🪄', file: 'seducer.png' },
+            { name: 'نغمه‌سرا', team: 'good', emoji: '🎵', file: 'bard.png' }
+        ];
+        
+        // ---------- GAME STATE ----------
+        let game = {
+            players: [],
+            phase: 'idle', // idle | night | day | ended
+            round: 0,
+            winner: null,
+            log: []
+        };
+        
+        // ---------- DOM REFS ----------
+        const $ = id => document.getElementById(id);
+        const playersGrid = $('playersGrid');
+        const phaseBadge = $('phaseBadge');
+        const roundDisplay = $('roundDisplay');
+        const aliveCount = $('aliveCount');
+        const goodCount = $('goodCount');
+        const evilCount = $('evilCount');
+        const winnerDisplay = $('winnerDisplay');
+        const logBox = $('logBox');
+        const btnStart = $('btnStart');
+        const btnNext = $('btnNext');
+        
+        // ---------- UTILITY ----------
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        
+        function getAlive() { return game.players.filter(p => p.isAlive); }
+        function getAliveGood() { return game.players.filter(p => p.isAlive && p.team === 'good'); }
+        function getAliveEvil() { return game.players.filter(p => p.isAlive && p.team === 'evil'); }
+        function getRoleFile(roleName) {
+            const found = ROLES_LIST.find(r => r.name === roleName);
+            return found ? found.file : 'villager.png';
+        }
+        function getRoleEmoji(roleName) {
+            const found = ROLES_LIST.find(r => r.name === roleName);
+            return found ? found.emoji : '❓';
+        }
+        function getRoleTeam(roleName) {
+            const found = ROLES_LIST.find(r => r.name === roleName);
+            return found ? found.team : 'good';
+        }
+        
+        // ---------- INIT GAME ----------
+        function initGame() {
+            const playerCount = 10; // می‌توانید تغییر دهید
+            const names = ['سارا', 'مهدی', 'نیلوفر', 'امیر', 'زهرا', 'رضا', 'مینا', 'کیان', 'سپهر', 'آتنا'];
+            
+            // انتخاب نقش‌ها بر اساس تعداد بازیکنان
+            let selectedRoles = [];
+            const allGood = ROLES_LIST.filter(r => r.team === 'good');
+            const allEvil = ROLES_LIST.filter(r => r.team === 'evil');
+            
+            // نقش‌های کلیدی
+            const coreGood = ['روستایی', 'دکتر', 'پیشگو'];
+            const coreEvil = ['گرگینه', 'گرگینه'];
+            
+            selectedRoles = [...coreGood, ...coreEvil];
+            
+            // اضافه کردن نقش‌های بیشتر
+            const extraCount = playerCount - selectedRoles.length;
+            if (extraCount > 0) {
+                const extraGood = allGood.filter(r => !coreGood.includes(r.name) && r.name !== 'روستایی');
+                const extraEvil = allEvil.filter(r => !coreEvil.includes(r.name));
+                const shuffledGood = shuffle([...extraGood]);
+                const shuffledEvil = shuffle([...extraEvil]);
+                
+                const goodCount = Math.ceil(extraCount * 0.6);
+                const evilCount = Math.floor(extraCount * 0.4);
+                
+                for (let i = 0; i < goodCount && i < shuffledGood.length; i++) {
+                    selectedRoles.push(shuffledGood[i].name);
+                }
+                for (let i = 0; i < evilCount && i < shuffledEvil.length; i++) {
+                    selectedRoles.push(shuffledEvil[i].name);
+                }
+            }
+            
+            // پر کردن باقی‌مانده با روستایی
+            while (selectedRoles.length < playerCount) {
+                selectedRoles.push('روستایی');
+            }
+            
+            shuffle(selectedRoles);
+            
+            // ساخت بازیکنان
+            game.players = [];
+            for (let i = 0; i < playerCount; i++) {
+                const role = selectedRoles[i] || 'روستایی';
+                game.players.push({
+                    id: i,
+                    name: names[i] || `بازیکن ${i+1}`,
+                    role: role,
+                    team: getRoleTeam(role),
+                    isAlive: true,
+                    isRevealed: false
+                });
+            }
+            
+            game.phase = 'idle';
+            game.round = 0;
+            game.winner = null;
+            game.log = [];
+            
+            addLog(`🎮 بازی جدید با ${playerCount} بازیکن شروع شد!`);
+            const roleList = game.players.map(p => p.role).join('، ');
+            addLog(`📋 نقش‌ها: ${roleList}`);
+            
+            render();
+            updateUI();
+        }
+        
+        // ---------- LOGGING ----------
+        function addLog(message) {
+            const time = new Date().toLocaleTimeString('fa-IR');
+            game.log.push({ time, message });
+            renderLog();
+        }
+        
+        function renderLog() {
+            logBox.innerHTML = game.log.slice(-20).map(entry =>
+                `<div class="log-entry">
+                    <span class="time">[${entry.time}]</span>
+                    ${entry.message}
+                </div>`
+            ).join('');
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+        
+        // ---------- GAME LOGIC ----------
+        function startGame() {
+            if (game.phase !== 'idle') return;
+            game.phase = 'night';
+            game.round = 1;
+            addLog('🌙 شب فرا رسید... گرگ‌ها بیدار می‌شوند!');
+            
+            // شبیه‌سازی خودکار
+            setTimeout(() => {
+                if (game.phase === 'night') runNightPhase();
+            }, 1500);
+            
+            render();
+            updateUI();
+        }
+        
+        function runNightPhase() {
+            const alive = getAlive();
+            const aliveGood = getAliveGood();
+            const aliveEvil = getAliveEvil();
+            
+            if (checkWinner()) return;
+            
+            // گرگ‌ها یک نفر را می‌کشند
+            const wolves = aliveEvil.filter(p => p.role === 'گرگینه' || p.role === 'گرگ آلفا');
+            if (wolves.length > 0 && aliveGood.length > 0) {
+                const target = aliveGood[Math.floor(Math.random() * aliveGood.length)];
+                if (target) {
+                    target.isAlive = false;
+                    addLog(`🐺 گرگ‌ها ${target.name} (${target.role}) را کشتند!`);
+                }
+            }
+            
+            // دکتر نجات می‌دهد (شانس ۶۰٪)
+            const doctors = aliveGood.filter(p => p.role === 'دکتر');
+            if (doctors.length > 0 && Math.random() > 0.4) {
+                const victim = game.players.find(p => !p.isAlive && p.team === 'good');
+                if (victim) {
+                    victim.isAlive = true;
+                    addLog(`💉 دکتر ${victim.name} را نجات داد!`);
+                }
+            }
+            
+            // پیشگو بررسی می‌کند
+            const seers = aliveGood.filter(p => p.role === 'پیشگو');
+            if (seers.length > 0) {
+                const target = alive[Math.floor(Math.random() * alive.length)];
+                if (target) {
+                    const teamLabel = target.team === 'evil' ? 'شر' : 'خیر';
+                    addLog(`🔮 پیشگو ${target.name} را بررسی کرد: ${target.role} (${teamLabel})`);
+                }
+            }
+            
+            if (checkWinner()) return;
+            
+            // رفتن به روز
+            game.phase = 'day';
+            addLog(`☀️ روز ${game.round} فرا رسید. رأی‌گیری برای اعدام.`);
+            
+            // رأی‌گیری خودکار
+            setTimeout(() => {
+                if (game.phase === 'day') runDayPhase();
+            }, 2000);
+            
+            render();
+            updateUI();
+        }
+        
+        function runDayPhase() {
+            const alive = getAlive();
+            if (checkWinner()) return;
+            
+            // رأی‌گیری خودکار
+            if (alive.length > 1) {
+                const accused = alive[Math.floor(Math.random() * alive.length)];
+                if (accused) {
+                    // چک کردن شاهدخت
+                    if (accused.role === 'شاهدخت' && !accused.isRevealed) {
+                        accused.isRevealed = true;
+                        addLog(`👸 شاهدخت ${accused.name} از اعدام جان سالم به در برد!`);
+                    } else {
+                        accused.isAlive = false;
+                        addLog(`⚖️ ${accused.name} (${accused.role}) اعدام شد!`);
+                        
+                        // چک کردن دلقک
+                        if (accused.role === 'دلقک') {
+                            game.winner = 'jester';
+                            addLog(`🤡 دلقک ${accused.name} برنده شد!`);
+                            endGame();
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            if (checkWinner()) return;
+            
+            // رفتن به شب
+            game.phase = 'night';
+            game.round++;
+            addLog(`🌙 شب ${game.round} فرا رسید...`);
+            
+            setTimeout(() => {
+                if (game.phase === 'night') runNightPhase();
+            }, 1500);
+            
+            render();
+            updateUI();
+        }
+        
+        function checkWinner() {
+            const aliveGood = getAliveGood();
+            const aliveEvil = getAliveEvil();
+            
+            if (aliveEvil.length === 0) {
+                game.winner = 'good';
+                addLog('🎉 تیم خیر (خوب‌ها) برنده شدند!');
+                endGame();
+                return true;
+            }
+            if (aliveGood.length === 0 || aliveGood.length <= aliveEvil.length) {
+                game.winner = 'evil';
+                addLog('🐺 تیم شر (گرگ‌ها) برنده شدند!');
+                endGame();
+                return true;
+            }
+            return false;
+        }
+        
+        function endGame() {
+            game.phase = 'ended';
+            game.players.forEach(p => p.isRevealed = true);
+            render();
+            updateUI();
+            
+            if (game.winner === 'good') {
+                winnerDisplay.innerHTML = `<div class="winner-banner">🎉 برنده: تیم خیر (خوب‌ها)</div>`;
+            } else if (game.winner === 'evil') {
+                winnerDisplay.innerHTML = `<div class="winner-banner">🐺 برنده: تیم شر (گرگ‌ها)</div>`;
+            } else if (game.winner === 'jester') {
+                winnerDisplay.innerHTML = `<div class="winner-banner">🤡 برنده: دلقک!</div>`;
+            }
+        }
+        
+        function nextPhase() {
+            if (game.phase === 'night') {
+                runNightPhase();
+            } else if (game.phase === 'day') {
+                runDayPhase();
+            }
+        }
+        
+        function resetGame() {
+            winnerDisplay.innerHTML = '';
+            if (game.phase === 'ended') {
+                initGame();
+            } else {
+                initGame();
+            }
+        }
+        
+        // ---------- RENDER ----------
+        function render() {
+            const all = game.players;
+            
+            playersGrid.innerHTML = all.map(p => {
+                const isDead = !p.isAlive;
+                const isRevealed = p.isRevealed || game.phase === 'ended';
+                const teamClass = p.team === 'good' ? 'role-good' : 'role-evil';
+                const roleDisplay = isRevealed ? `${getRoleEmoji(p.role)} ${p.role}` : '❓';
+                const imgSrc = isRevealed ? `cards/${getRoleFile(p.role)}` : 'cards/hidden.png';
+                const imgClass = isDead ? 'card-image dead' : (isRevealed ? 'card-image' : 'card-image hidden');
+                
+                return `
+                    <div class="player-card ${isDead ? 'dead' : ''}">
+                        <img src="${imgSrc}" alt="${p.role}" class="${imgClass}"
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22160%22%3E%3Crect width=%22120%22 height=%22160%22 fill=%22%23333%22/%3E%3Ctext x=%2260%22 y=%2280%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2230%22%3E${getRoleEmoji(p.role)}%3C/text%3E%3C/svg%3E'">
+                        <div class="name">${p.name} ${p.team === 'evil' ? '🐺' : '👼'}</div>
+                        <div class="role-text ${isRevealed ? teamClass : 'role-hidden'}">${roleDisplay}</div>
+                        <div class="alive-status">${isDead ? '💀 مرده' : '❤️ زنده'}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Update stats
+            aliveCount.textContent = getAlive().length;
+            goodCount.textContent = getAliveGood().length;
+            evilCount.textContent = getAliveEvil().length;
+            
+            // Phase badge
+            let phaseText = '';
+            let phaseClass = '';
+            switch (game.phase) {
+                case 'idle': phaseText = '⏳ آماده'; phaseClass = 'phase-idle'; break;
+                case 'night': phaseText = `🌙 شب ${game.round}`; phaseClass = 'phase-night'; break;
+                case 'day': phaseText = `☀️ روز ${game.round}`; phaseClass = 'phase-day'; break;
+                case 'ended': phaseText = '🏁 پایان'; phaseClass = 'phase-ended'; break;
+                default: phaseText = game.phase; phaseClass = 'phase-idle';
+            }
+            phaseBadge.textContent = phaseText;
+            phaseBadge.className = `phase-badge ${phaseClass}`;
+            roundDisplay.textContent = game.round;
+        }
+        
+        function updateUI() {
+            const isIdle = game.phase === 'idle';
+            const isEnded = game.phase === 'ended';
+            
+            btnStart.disabled = !isIdle;
+            btnNext.disabled = isIdle || isEnded;
+        }
+        
+        // ---------- INIT ----------
+        initGame();
+    </script>
+</body>
+</html>
